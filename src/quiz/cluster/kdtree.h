@@ -15,41 +15,65 @@ struct Node
 	Node(std::vector<float> arr, int setId)
 	:	point(arr), id(setId), left(NULL), right(NULL)
 	{}
-
-	~Node()
-	{
-		delete left;
-		delete right;
-	}
 };
 
 struct KdTree
 {
 	Node* root;
-
+  
 	KdTree()
 	: root(NULL)
 	{}
+	
 
-	~KdTree()
-	{
-		delete root;
-	}
-
+  
 	void insert(std::vector<float> point, int id)
 	{
 		// TODO: Fill in this function to insert a new point into the tree
-		// the function should create a new node and place correctly with in the root 
-
+		// the function should create a new node and place correctly with in the 
+      inserthelpfunc(&root, point, 0, id);
 	}
+  
+  	void inserthelpfunc(Node **node, std::vector<float> point, int depth, int id){
+  		uint cd = depth % 2;//current dimension
+    	if(*node == NULL){
+          *node = new Node(point, id);  
+        }else{
+          if(point[cd] < ((*node)->point[cd])){
+          		inserthelpfunc(&(*node)->left, point, depth+1, id);
+        	}else{
+         		inserthelpfunc(&(*node)->right, point, depth+1, id);
+        	}
+        }
+    };
+  
 
 	// return a list of point ids in the tree that are within distance of target
 	std::vector<int> search(std::vector<float> target, float distanceTol)
 	{
 		std::vector<int> ids;
+      	searchHelper(target, root, 0, distanceTol, ids);
 		return ids;
 	}
 	
+  void searchHelper(std::vector<float> target, Node* node, int depth, float distanceTol, std::vector<int> &ids){
+    if(node != NULL){
+      if(fabs(node->point[0]-target[0]) <= distanceTol && fabs(node->point[1]-target[1]) <= distanceTol){
+      	float distance = sqrt(pow(node->point[0]-target[0], 2) + pow(node->point[1]-target[1], 2));
+        if(distance < distanceTol){
+          ids.push_back(node->id);
+        }
+      }
+    
+    	if(node->point[depth%2] > (target[depth%2] - distanceTol)){
+			searchHelper(target, node->left, depth+1, distanceTol, ids);    
+    	}
+    	if(node->point[depth%2] < (target[depth%2] + distanceTol)){
+    	   searchHelper(target, node->right, depth+1, distanceTol, ids);
+    	}
+    	
+    }
+  }
 
 };
 
